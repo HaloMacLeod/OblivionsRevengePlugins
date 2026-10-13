@@ -1,13 +1,9 @@
-# coder plugins
-This repo contains my own plugins for Revenge.
+# Oblivions Revenge Plugins
+This repository contains plugins for Revenge.
 
 ---
 
 # How to install?
-Paste a plugin URL into the Plugins page of Revenge, following a basic format of:
-```
-https://il1ll.github.io/RevengePlugins/<PLUGIN_NAME>
-```
-# OblivionsRevengePlugins
-# OblivionsRevengePlugins
-# OblivionsRevengePlugins
+After GitHub Pages has deployed the repository, paste the plugin URL into the Plugins page of Revenge. For RevengeUserNotifier, use:
+
+https://halomacleod.github.io/OblivionsRevengePlugins/RevengeUserNotifier
