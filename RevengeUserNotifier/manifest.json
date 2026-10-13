@@ -1,1 +1,1 @@
-{"name":"RevengeUserNotifier","description":"Webhook notifications for opted-in users: presence, active platforms, and direct-message typing.","authors":[],"main":"index.js","vendetta":{"icon":"ic_person_status"},"hash":"399954ff6e2d108fa7194959095d7c02dbceee94491e00370e40711f6acf4835"}
+{"name":"RevengeUserNotifier","description":"Webhook notifications for opted-in users: presence, active platforms, and direct-message typing.","authors":[],"main":"index.js","vendetta":{"icon":"ic_person_status"},"hash":"444bcdb9990ba9aff07f6a6432825e7104b2966b9eab04dd3b4e7bb1b13a10bb"}
