@@ -1,0 +1,9 @@
+{
+  "name": "RevengeUserNotifier",
+  "description": "Webhook notifications for opted-in users: presence, active platforms, and direct-message typing.",
+  "authors": [],
+  "main": "src/index.ts",
+  "vendetta": {
+    "icon": "ic_person_status"
+  }
+}
