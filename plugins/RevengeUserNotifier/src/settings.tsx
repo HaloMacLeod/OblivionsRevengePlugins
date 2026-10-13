@@ -2,6 +2,8 @@ import { React } from "@vendetta/metro/common";
 import { findByProps } from "@vendetta/metro";
 import { storage } from "@vendetta/plugin";
 import { useProxy } from "@vendetta/storage";
+import { showToast } from "@vendetta/ui/toasts";
+import { logPluginEvent, type PluginLogEntry } from "./logger";
 
 const { ScrollView } = findByProps("ScrollView");
 const { Stack, TableRow, TableRowGroup, TableSwitchRow, TextInput } = findByProps(
@@ -13,9 +15,19 @@ const { Stack, TableRow, TableRowGroup, TableSwitchRow, TextInput } = findByProp
 );
 
 const OPTED_IN_USER_IDS = [
-  "1412382371730161758",
   "1103168025403858954",
 ];
+
+function isDiscordWebhookUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" &&
+      ["discord.com", "discordapp.com"].includes(url.hostname) &&
+      /^\/api\/webhooks\/\d+\/[^/]+\/?$/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
 
 export default function Settings() {
   useProxy(storage);
@@ -42,6 +54,62 @@ export default function Settings() {
             label="Tracked opted-in users"
             subLabel={OPTED_IN_USER_IDS.join(", ")}
           />
+          <TableRow
+            label="Send test notification"
+            subLabel="Check that the configured webhook accepts messages"
+            onPress={async () => {
+              const webhookUrl = String(storage.webhookUrl ?? "").trim();
+              if (!isDiscordWebhookUrl(webhookUrl)) {
+                logPluginEvent("Test not sent: webhook URL is missing or invalid");
+                showToast("RevengeUserNotifier: enter a valid Discord webhook URL first");
+                return;
+              }
+
+              try {
+                logPluginEvent("Sending test webhook");
+                const response = await fetch(webhookUrl, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    content: "RevengeUserNotifier test: webhook delivery is working.",
+                    allowed_mentions: { parse: [] },
+                  }),
+                });
+                if (!response.ok) {
+                  const details = (await response.text().catch(() => "")).slice(0, 200);
+                  throw new Error(`HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ""}${details ? `: ${details}` : ""}`);
+                }
+                logPluginEvent(`Test webhook delivered (HTTP ${response.status})`);
+                showToast("RevengeUserNotifier: test notification sent");
+              } catch (error) {
+                const status = error instanceof Error ? error.message : "network error";
+                logPluginEvent(`Test webhook failed (${status})`);
+                showToast(`RevengeUserNotifier: test failed (${status})`);
+              }
+            }}
+          />
+        </TableRowGroup>
+
+        <TableRowGroup title={`Logs (${Array.isArray(storage.webhookLogs) ? storage.webhookLogs.length : 0})`}>
+          <TableRow
+            label="Clear logs"
+            subLabel="Remove saved diagnostic entries"
+            onPress={() => {
+              storage.webhookLogs = [];
+              forceUpdate();
+              showToast("RevengeUserNotifier: logs cleared");
+            }}
+          />
+          {((Array.isArray(storage.webhookLogs) ? storage.webhookLogs : []) as PluginLogEntry[]).map((entry, index) => (
+            <TableRow
+              key={`${entry.timestamp}-${index}`}
+              label={new Date(entry.timestamp).toLocaleString()}
+              subLabel={entry.message}
+            />
+          ))}
+          {(!Array.isArray(storage.webhookLogs) || storage.webhookLogs.length === 0) && (
+            <TableRow label="No logs yet" subLabel="Webhook and event diagnostics will appear here" />
+          )}
         </TableRowGroup>
 
         <TableRowGroup title="Notifications">
